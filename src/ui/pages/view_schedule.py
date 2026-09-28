@@ -9,7 +9,7 @@ from src.core.i18n import tr
 from src.core.models import *
 from src.ui.widgets.page_header import PageHeader
 
-class View_schedulePage(QWidget):
+class ViewSchedulePage(QWidget):
     def __init__(self):
         super().__init__(); self._build_ui()
     def _build_ui(self):
