@@ -200,11 +200,8 @@ class SchedulingEngine:
                     if assigned_room and not self._check_room_available(assigned_room,
                         self.slot_by_id[slot_id].day, self.slot_by_id[slot_id].period_type): continue
                     if self._would_create_gap(grid, section.id, slot_id): continue
-                    # قيد: حد أقصى للحصص اليومية للقسم
+                    # لا حد أقصى للحصص اليومية - يمكن حتى 8 ساعات
                     day = self.slot_by_id[slot_id].day
-                    if section_daily_count[section.id][day] >= self.config.max_sessions_per_day: continue
-                    # قيد: حد أقصى للحصص اليومية للأستاذ
-                    if teacher_daily_count[teacher.id][day] >= self.config.max_teacher_sessions_per_day: continue
                     # قيد: لا تكرار نفس المادة مرتين في نفس اليوم (إلا إذا كانت 2h متتالية)
                     if subject.id in section_daily_subjects[section.id][day] and session_duration != 2: continue
                     room_id = assigned_room.id if assigned_room else 0
@@ -236,8 +233,7 @@ class SchedulingEngine:
                                 self.slot_by_id[sid].day, self.slot_by_id[sid].period_type): continue
                             if self._would_create_gap(grid, section.id, sid): continue
                             day = self.slot_by_id[sid].day
-                            if section_daily_count[section.id][day] >= self.config.max_sessions_per_day: continue
-                            if teacher_daily_count[at.id][day] >= self.config.max_teacher_sessions_per_day: continue
+                            # لا حد أقصى للحصص اليومية - يمكن حتى 8 ساعات
                             if subject.id in section_daily_subjects[section.id][day] and session_duration != 2: continue
                             room_id = assigned_room.id if assigned_room else 0
                             entry = ScheduleEntry(schedule_id=schedule_id, section_id=section.id, subject_id=subject.id,
