@@ -106,6 +106,26 @@ class SchedulingEngine:
             if idx not in used_indices: return True
         return False
 
+    def _is_tuesday_evening(self, slot_id):
+        """قيد: عدم الدراسة يوم الثلاثاء مساءً (الثلاثاء = يوم 3)"""
+        slot = self.slot_by_id.get(slot_id)
+        if not slot: return False
+        return slot.day == 3 and slot.period_type == "evening"
+
+    def _subject_exceeds_daily_limit(self, section_daily_subjects, section_id, day, subject_id, session_duration):
+        """
+        قيد: لا تدرس المادة أكثر من ساعتين يوميًا.
+        - إذا كانت المادة لها 2h في ذلك اليوم بالفعل → لا يمكن إضافة أي حصة أخرى
+        - إذا كانت لها 1h → يمكن إضافة 1h فقط (إجمالي 2h)
+        """
+        current_hours = section_daily_subjects[section_id][day].get(subject_id, 0)
+        return current_hours + session_duration > 2
+
+    def _is_sport_subject(self, subject):
+        """قيد: مادة التربية البدنية تأتي كحصة واحدة (1h) أو حصتين متتاليتين (2h)"""
+        if not subject: return False
+        return subject.required_room_type == "sport"
+
     def _find_room_for_subject(self, subject, section):
         if self.config.use_fixed_rooms and not subject.required_room_type:
             if section.fixed_room_id:
@@ -171,7 +191,8 @@ class SchedulingEngine:
         # تتبع الحصص اليومية للقسم والأستاذ
         section_daily_count = defaultdict(lambda: defaultdict(int))
         teacher_daily_count = defaultdict(lambda: defaultdict(int))
-        section_daily_subjects = defaultdict(lambda: defaultdict(set))
+        # تتبع ساعات كل مادة في كل يوم للقسم (للتحقق من حد الساعتين)
+        section_daily_subjects = defaultdict(lambda: defaultdict(dict))  # {section_id: {day: {subject_id: hours}}}
 
         for task in sorted_tasks:
             teacher = self.teacher_by_id.get(task.teacher_id)
@@ -200,10 +221,18 @@ class SchedulingEngine:
                     if assigned_room and not self._check_room_available(assigned_room,
                         self.slot_by_id[slot_id].day, self.slot_by_id[slot_id].period_type): continue
                     if self._would_create_gap(grid, section.id, slot_id): continue
-                    # لا حد أقصى للحصص اليومية - يمكن حتى 8 ساعات
                     day = self.slot_by_id[slot_id].day
-                    # قيد: لا تكرار نفس المادة مرتين في نفس اليوم (إلا إذا كانت 2h متتالية)
-                    if subject.id in section_daily_subjects[section.id][day] and session_duration != 2: continue
+                    
+                    # قيد جديد: عدم الدراسة يوم الثلاثاء مساءً
+                    if self._is_tuesday_evening(slot_id): continue
+                    
+                    # قيد جديد: لا تدرس المادة أكثر من ساعتين يوميًا
+                    if self._subject_exceeds_daily_limit(section_daily_subjects, section.id, day, subject.id, session_duration): continue
+                    
+                    # قيد: لا تكرار نفس المادة في نفس اليوم (إلا 2h متتالية)
+                    current_hours = section_daily_subjects[section.id][day].get(subject.id, 0)
+                    if current_hours > 0 and session_duration == 2: continue
+                    if current_hours == 2: continue
                     room_id = assigned_room.id if assigned_room else 0
                     entry = ScheduleEntry(schedule_id=schedule_id, section_id=section.id, subject_id=subject.id,
                         teacher_id=teacher.id, room_id=room_id, time_slot_id=slot_id,
@@ -216,7 +245,9 @@ class SchedulingEngine:
                     assigned_entries.append(entry)
                     section_daily_count[section.id][day] += 1
                     teacher_daily_count[teacher.id][day] += 1
-                    section_daily_subjects[section.id][day].add(subject.id)
+                    # تحديث ساعات المادة في ذلك اليوم
+                    current = section_daily_subjects[section.id][day].get(subject.id, 0)
+                    section_daily_subjects[section.id][day][subject.id] = current + session_duration
                     placed = True; break
                 if not placed:
                     # محاولة بديل
@@ -233,8 +264,14 @@ class SchedulingEngine:
                                 self.slot_by_id[sid].day, self.slot_by_id[sid].period_type): continue
                             if self._would_create_gap(grid, section.id, sid): continue
                             day = self.slot_by_id[sid].day
-                            # لا حد أقصى للحصص اليومية - يمكن حتى 8 ساعات
-                            if subject.id in section_daily_subjects[section.id][day] and session_duration != 2: continue
+                            # قيد جديد: عدم الدراسة يوم الثلاثاء مساءً
+                            if self._is_tuesday_evening(sid): continue
+                            # قيد جديد: لا تدرس المادة أكثر من ساعتين يوميًا
+                            if self._subject_exceeds_daily_limit(section_daily_subjects, section.id, day, subject.id, session_duration): continue
+                            # قيد: لا تكرار نفس المادة في نفس اليوم (إلا 2h متتالية)
+                            current_hours = section_daily_subjects[section.id][day].get(subject.id, 0)
+                            if current_hours > 0 and session_duration == 2: continue
+                            if current_hours == 2: continue
                             room_id = assigned_room.id if assigned_room else 0
                             entry = ScheduleEntry(schedule_id=schedule_id, section_id=section.id, subject_id=subject.id,
                                 teacher_id=at.id, room_id=room_id, time_slot_id=sid,
@@ -247,7 +284,8 @@ class SchedulingEngine:
                             assigned_entries.append(entry)
                             section_daily_count[section.id][day] += 1
                             teacher_daily_count[at.id][day] += 1
-                            section_daily_subjects[section.id][day].add(subject.id)
+                            current = section_daily_subjects[section.id][day].get(subject.id, 0)
+                            section_daily_subjects[section.id][day][subject.id] = current + session_duration
                             alt_placed = True; break
                         if alt_placed: break
                     if not alt_placed:
