@@ -83,9 +83,79 @@ class MainWindow(QMainWindow):
     def _on_language_changed(self, lang):
         self._change_lang(lang)
     def _change_lang(self, lang):
-        set_language(lang); self._apply_layout_direction()
-        QMessageBox.information(self, tr("language"), "أعد تشغيل البرنامج لتطبيق التغييرات بالكامل")
+        set_language(lang)
+        self._apply_layout_direction()
+        # حفظ اللغة في المؤسسة
+        from src.core.models import Institution
+        inst = Institution.load()
+        inst.language = lang
+        inst.save()
+        # إعادة بناء الواجهة بالكامل
+        self._rebuild_ui()
+        QMessageBox.information(self, tr("language"), tr("msg_saved"))
+
+    def _rebuild_ui(self):
+        """إعادة بناء الواجهة عند تغيير اللغة"""
+        # حذف الواجهة القديمة
+        central = self.centralWidget()
+        if central:
+            central.setParent(None)
+            central.deleteLater()
+
+        # إعادة بناء
+        central = QWidget()
+        self.setCentralWidget(central)
+        ml = QHBoxLayout(central)
+        ml.setContentsMargins(0, 0, 0, 0)
+        ml.setSpacing(0)
+
+        # شريط جانبي جديد
+        from src.ui.widgets.sidebar import Sidebar
+        self.sidebar = Sidebar()
+        self.sidebar.page_changed.connect(self._on_page_changed)
+        self.sidebar.demo_requested.connect(self._on_load_demo)
+        self.sidebar.language_changed.connect(self._on_language_changed)
+        ml.addWidget(self.sidebar)
+
+        # إعادة إنشاء الصفحات
+        from src.ui.pages.dashboard import DashboardPage
+        from src.ui.pages.institution import InstitutionPage
+        from src.ui.pages.cycles import CyclesPage
+        from src.ui.pages.sections import SectionsPage
+        from src.ui.pages.subjects import SubjectsPage
+        from src.ui.pages.teachers import TeachersPage
+        from src.ui.pages.rooms import RoomsPage
+        from src.ui.pages.time_slots import TimeSlotsPage
+        from src.ui.pages.generate import GeneratePage
+        from src.ui.pages.view_schedule import ViewSchedulePage
+        from src.ui.pages.absences import AbsencesPage
+        from src.ui.pages.settings import SettingsPage
+        from src.ui.pages.help import HelpPage
+
+        self.stack = QStackedWidget()
+        self.stack.setObjectName("mainStack")
+        self.pages = {
+            "dashboard": DashboardPage(), "institution": InstitutionPage(),
+            "cycles": CyclesPage(), "sections": SectionsPage(),
+            "subjects": SubjectsPage(), "teachers": TeachersPage(),
+            "rooms": RoomsPage(), "time_slots": TimeSlotsPage(),
+            "generate": GeneratePage(), "view": ViewSchedulePage(),
+            "absences": AbsencesPage(), "settings": SettingsPage(),
+            "help": HelpPage(),
+        }
+        for page in self.pages.values():
+            self.stack.addWidget(page)
+        self.stack.setCurrentWidget(self.pages["dashboard"])
+        ml.addWidget(self.stack, 1)
+
+        # تحديث العنوان
+        self.setWindowTitle(f"{tr('app_title')} v7.2")
+
+        # تحديث شريط الحالة
+        inst = Institution.load()
+        self.status.showMessage(f"{tr('institution_name')}: {inst.name} | {tr('institution_year')}: {inst.year}")
+
     def _about(self):
-        QMessageBox.about(self, "حول", "<h3>SchoolScheduler Ultimate</h3><p>v7.0.0</p><p>Python + PyQt6 + SQLite</p>")
+        QMessageBox.about(self, tr("about"), f"<h3>SchoolScheduler Ultimate</h3><p>v7.2.0</p><p>Python + PyQt6 + SQLite</p>")
     def closeEvent(self, event):
         from src.core.database import db; db.close(); event.accept()
