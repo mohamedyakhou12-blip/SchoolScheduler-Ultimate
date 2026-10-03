@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QFrame
-from PyQt6.QtCore import Qt
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QFrame
+from PyQt5.QtCore import Qt
 from src.core.i18n import tr
 
 class PageHeader(QWidget):
@@ -12,6 +12,6 @@ class PageHeader(QWidget):
         t = QLabel(title); t.setObjectName("pageTitle"); layout.addWidget(t)
         if subtitle:
             s = QLabel(subtitle); s.setObjectName("pageSubtitle"); layout.addWidget(s)
-        sep = QFrame(); sep.setFrameShape(QFrame.Shape.HLine)
+        sep = QFrame(); sep.setFrameShape(QFrame.HLine)
         sep.setStyleSheet("background-color: #334155; max-height: 1px;")
         layout.addWidget(sep)

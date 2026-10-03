@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame,
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame,
     QPushButton, QMessageBox, QScrollArea)
-from PyQt6.QtCore import Qt
+from PyQt5.QtCore import Qt
 from src.core.i18n import tr
 from src.core.database import db
 from src.ui.widgets.page_header import PageHeader
@@ -12,7 +12,7 @@ class SettingsPage(QWidget):
     def _build_ui(self):
         layout = QVBoxLayout(self); layout.setContentsMargins(0,0,0,0)
         layout.addWidget(PageHeader(tr("nav_constraints"), tr("constraints_hard")))
-        scroll = QScrollArea(); scroll.setWidgetResizable(True); scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll = QScrollArea(); scroll.setWidgetResizable(True); scroll.setFrameShape(QFrame.NoFrame)
         content = QWidget(); cl = QVBoxLayout(content); cl.setContentsMargins(24,16,24,24)
         # القيود الصلبة
         hc = QFrame(); hc.setObjectName("card"); hl = QVBoxLayout(hc); hl.setContentsMargins(24,20,24,20)
@@ -44,8 +44,8 @@ class SettingsPage(QWidget):
         cl.addWidget(dc); cl.addStretch(); scroll.setWidget(content); layout.addWidget(scroll,1)
     def _reset(self):
         r = QMessageBox.warning(self, tr("confirm"), "⚠️ سيتم حذف كل البيانات نهائيًا!",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        if r == QMessageBox.StandardButton.Yes:
+            QMessageBox.Yes | QMessageBox.No)
+        if r == QMessageBox.Yes:
             for t in ["schedule_entries","schedules","absences","locked_sessions","time_slots",
                 "teacher_sections","rooms","teachers","subject_hours","subjects","sections","levels","cycles"]:
                 db.execute(f"DELETE FROM {t};")

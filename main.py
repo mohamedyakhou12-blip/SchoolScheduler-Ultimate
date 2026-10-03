@@ -18,7 +18,7 @@ def setup_environment():
 def check_dependencies():
     if getattr(sys, 'frozen', False): return
     missing = []
-    for mod in ["PyQt6", "reportlab", "openpyxl"]:
+    for mod in ["PyQt5", "reportlab", "openpyxl"]:
         try: __import__(mod)
         except ImportError: missing.append(mod)
     if missing:
@@ -29,8 +29,8 @@ def run_app():
     setup_environment()
     check_dependencies()
     try:
-        from PyQt6.QtWidgets import QApplication
-        from PyQt6.QtGui import QFont, QIcon
+        from PyQt5.QtWidgets import QApplication
+        from PyQt5.QtGui import QFont, QIcon
         from src.core.i18n import tr, set_language
         from src.core.models import Institution, create_all_tables
         from src.ui.main_window import MainWindow
@@ -48,7 +48,7 @@ def run_app():
         font = QFont()
         for fname in ["Noto Sans Arabic", "Cairo", "Tahoma", "DejaVu Sans", "Arial", "Segoe UI"]:
             try:
-                from PyQt6.QtGui import QFontDatabase
+                from PyQt5.QtGui import QFontDatabase
                 if fname in set(QFontDatabase.families()):
                     font.setFamily(fname); break
             except: pass

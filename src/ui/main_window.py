@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import sys, os
-from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
+from PyQt5.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
     QStackedWidget, QFrame, QStatusBar, QMenuBar, QMenu, QMessageBox, QApplication)
-from PyQt6.QtCore import Qt, QSize
-from PyQt6.QtGui import QAction, QFont
+from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtWidgets import QAction
+from PyQt5.QtGui import QFont
 from src.core.i18n import tr, set_language, get_language, is_rtl
 from src.core.models import Institution, create_all_tables, seed_demo_data
 from src.ui.styles import APP_STYLESHEET
@@ -62,15 +63,15 @@ class MainWindow(QMainWindow):
         inst = Institution.load()
         self.status.showMessage(f"{tr('institution_name')}: {inst.name} | {tr('institution_year')}: {inst.year}")
     def _apply_layout_direction(self):
-        QApplication.setLayoutDirection(Qt.LayoutDirection.RightToLeft if is_rtl() else Qt.LayoutDirection.LeftToRight)
+        QApplication.setLayoutDirection(Qt.RightToLeft if is_rtl() else Qt.LeftToRight)
     def _on_page_changed(self, key):
         if key in self.pages:
             self.stack.setCurrentWidget(self.pages[key])
             if hasattr(self.pages[key], "refresh"): self.pages[key].refresh()
     def _on_load_demo(self):
         r = QMessageBox.question(self, tr("confirm"), "تحميل بيانات تجريبية?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        if r == QMessageBox.StandardButton.Yes:
+            QMessageBox.Yes | QMessageBox.No)
+        if r == QMessageBox.Yes:
             from src.core.database import db
             for t in ["schedule_entries","schedules","absences","locked_sessions","time_slots",
                 "teacher_sections","rooms","teachers","subject_hours","subjects","sections","levels","cycles"]:
@@ -156,6 +157,6 @@ class MainWindow(QMainWindow):
         self.status.showMessage(f"{tr('institution_name')}: {inst.name} | {tr('institution_year')}: {inst.year}")
 
     def _about(self):
-        QMessageBox.about(self, tr("about"), f"<h3>SchoolScheduler Ultimate</h3><p>v7.2.0</p><p>Python + PyQt6 + SQLite</p>")
+        QMessageBox.about(self, tr("about"), f"<h3>SchoolScheduler Ultimate</h3><p>v7.2.0</p><p>Python + PyQt5 + SQLite</p>")
     def closeEvent(self, event):
         from src.core.database import db; db.close(); event.accept()

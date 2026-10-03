@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame,
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame,
     QGridLayout, QPushButton, QScrollArea, QSizePolicy)
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt, pyqtSignal
 from src.core.i18n import tr
 from src.core.models import (Institution, Cycle, Level, Section, Subject, Teacher, Room, Schedule)
 from src.ui.widgets.page_header import PageHeader
@@ -11,9 +11,9 @@ class StatCard(QFrame):
         super().__init__(); self.setObjectName("statCard")
         layout = QVBoxLayout(self); layout.setContentsMargins(20,16,20,16); layout.setSpacing(4)
         top = QHBoxLayout()
-        il = QLabel(icon); il.setStyleSheet(f"font-size: 28px; color: {color};"); il.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        il = QLabel(icon); il.setStyleSheet(f"font-size: 28px; color: {color};"); il.setAlignment(Qt.AlignCenter)
         nl = QLabel(value); nl.setStyleSheet(f"color: {color}; font-size: 32px; font-weight: bold;")
-        top.addWidget(il); top.addWidget(nl,1,Qt.AlignmentFlag.AlignLeft); layout.addLayout(top)
+        top.addWidget(il); top.addWidget(nl,1,Qt.AlignLeft); layout.addLayout(top)
         ll = QLabel(label); ll.setStyleSheet("color: #94A3B8; font-size: 12px;"); layout.addWidget(ll)
 
 class DashboardPage(QWidget):
@@ -23,7 +23,7 @@ class DashboardPage(QWidget):
     def _build_ui(self):
         layout = QVBoxLayout(self); layout.setContentsMargins(0,0,0,0)
         layout.addWidget(PageHeader(tr("nav_dashboard"), tr("app_subtitle")))
-        scroll = QScrollArea(); scroll.setWidgetResizable(True); scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll = QScrollArea(); scroll.setWidgetResizable(True); scroll.setFrameShape(QFrame.NoFrame)
         content = QWidget(); cl = QVBoxLayout(content); cl.setContentsMargins(24,16,24,24); cl.setSpacing(16)
         inst = Institution.load()
         stats = [("🏫",tr("institution_title"),inst.name,"#3B82F6"),

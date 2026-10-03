@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QPushButton,
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QPushButton,
     QTableWidget, QTableWidgetItem, QHeaderView, QDialog, QFormLayout, QLineEdit, QComboBox,
     QMessageBox, QScrollArea, QSplitter)
-from PyQt6.QtCore import Qt
+from PyQt5.QtCore import Qt
 from src.core.i18n import tr
 from src.core.models import Cycle, Level
 from src.ui.widgets.page_header import PageHeader
@@ -43,7 +43,7 @@ class CyclesPage(QWidget):
     def _build_ui(self):
         layout = QVBoxLayout(self); layout.setContentsMargins(0,0,0,0)
         layout.addWidget(PageHeader(tr("nav_cycles"), "الأطوار والمستويات"))
-        scroll = QScrollArea(); scroll.setWidgetResizable(True); scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll = QScrollArea(); scroll.setWidgetResizable(True); scroll.setFrameShape(QFrame.NoFrame)
         content = QWidget(); cl = QVBoxLayout(content); cl.setContentsMargins(24,16,24,24)
         splitter = QSplitter(Qt.Orientation.Horizontal)
         # الأطوار
@@ -56,9 +56,9 @@ class CyclesPage(QWidget):
         ll.addLayout(bl)
         self.cycles_table = QTableWidget(); self.cycles_table.setColumnCount(2)
         self.cycles_table.setHorizontalHeaderLabels(["ID","الاسم"])
-        self.cycles_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-        self.cycles_table.setColumnWidth(0,60); self.cycles_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
-        self.cycles_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers); ll.addWidget(self.cycles_table)
+        self.cycles_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+        self.cycles_table.setColumnWidth(0,60); self.cycles_table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.cycles_table.setEditTriggers(QTableWidget.NoEditTriggers); ll.addWidget(self.cycles_table)
         self.cur_cycle_label = QLabel(""); self.cur_cycle_label.setStyleSheet("color:#94A3B8;font-size:12px;"); ll.addWidget(self.cur_cycle_label)
         splitter.addWidget(lc)
         # المستويات
@@ -71,9 +71,9 @@ class CyclesPage(QWidget):
         rl.addLayout(bl2)
         self.levels_table = QTableWidget(); self.levels_table.setColumnCount(2)
         self.levels_table.setHorizontalHeaderLabels(["ID","الاسم"])
-        self.levels_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-        self.levels_table.setColumnWidth(0,60); self.levels_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
-        self.levels_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers); rl.addWidget(self.levels_table)
+        self.levels_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+        self.levels_table.setColumnWidth(0,60); self.levels_table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.levels_table.setEditTriggers(QTableWidget.NoEditTriggers); rl.addWidget(self.levels_table)
         splitter.addWidget(rc); splitter.setSizes([500,500])
         cl.addWidget(splitter); cl.addStretch(); scroll.setWidget(content); layout.addWidget(scroll,1)
         self.cycles_table.cellClicked.connect(self._on_cycle_selected); self._load_cycles()
@@ -95,23 +95,23 @@ class CyclesPage(QWidget):
         r=self.levels_table.currentRow(); return int(self.levels_table.item(r,0).text()) if r>=0 and self.levels_table.item(r,0) else None
     def _add_cycle(self):
         d=CycleDialog(self)
-        if d.exec()==QDialog.DialogCode.Accepted and d.get_name():
+        if d.exec()==QDialog.Accepted and d.get_name():
             Cycle(name=d.get_name()).save(); self._load_cycles()
     def _edit_cycle(self):
         cid=self._sel_cycle()
         if not cid: return
         c=Cycle.get(cid); d=CycleDialog(self,c)
-        if d.exec()==QDialog.DialogCode.Accepted and d.get_name(): c.name=d.get_name(); c.save(); self._load_cycles()
+        if d.exec()==QDialog.Accepted and d.get_name(): c.name=d.get_name(); c.save(); self._load_cycles()
     def _del_cycle(self):
         cid=self._sel_cycle()
         if not cid: return
-        if QMessageBox.question(self,tr("confirm"),tr("msg_confirm_delete"))==QMessageBox.StandardButton.Yes:
+        if QMessageBox.question(self,tr("confirm"),tr("msg_confirm_delete"))==QMessageBox.Yes:
             Cycle(id=cid).delete(); self._load_cycles(); self.levels_table.setRowCount(0)
     def _add_level(self):
         cycles=Cycle.all()
         if not cycles: QMessageBox.warning(self,"","أضف طورًا أولًا"); return
         d=LevelDialog(self,cycles=cycles)
-        if d.exec()==QDialog.DialogCode.Accepted:
+        if d.exec()==QDialog.Accepted:
             cid,name=d.get_data()
             if name: Level(cycle_id=cid,name=name).save()
             if self._sel_cycle(): self._load_levels(self._sel_cycle())
@@ -121,13 +121,13 @@ class CyclesPage(QWidget):
         levels=Level.all(); level=next((l for l in levels if l.id==lid),None)
         if level: 
             d=LevelDialog(self,level,Cycle.all())
-            if d.exec()==QDialog.DialogCode.Accepted:
+            if d.exec()==QDialog.Accepted:
                 level.cycle_id,level.name=d.get_data(); level.save()
                 if self._sel_cycle(): self._load_levels(self._sel_cycle())
     def _del_level(self):
         lid=self._sel_level()
         if not lid: return
-        if QMessageBox.question(self,tr("confirm"),tr("msg_confirm_delete"))==QMessageBox.StandardButton.Yes:
+        if QMessageBox.question(self,tr("confirm"),tr("msg_confirm_delete"))==QMessageBox.Yes:
             levels=Level.all(); level=next((l for l in levels if l.id==lid),None)
             if level: level.delete(); 
             if self._sel_cycle(): self._load_levels(self._sel_cycle())

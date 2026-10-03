@@ -9,17 +9,15 @@ def build():
         "--windowed", "--onefile",
         "--add-data", f"src/core/translations{os.pathsep}src/core/translations"]
     
-    # إضافة resources فقط إذا موجود
     resources_dir = SCRIPT_DIR / "resources"
     if resources_dir.exists() and any(resources_dir.iterdir()):
         cmd.extend(["--add-data", f"resources{os.pathsep}resources"])
     
-    # أيقونة
     icon = resources_dir / "icon.ico"
     if icon.exists():
         cmd.extend(["--icon", str(icon)])
     
-    for mod in ["tkinter", "matplotlib", "numpy", "pandas", "PyQt5", "PySide6"]:
+    for mod in ["tkinter", "matplotlib", "numpy", "pandas", "PyQt6", "PySide6", "PySide2"]:
         cmd.extend(["--exclude-module", mod])
     
     cmd.append(str(SCRIPT_DIR / "main.py"))
@@ -31,7 +29,6 @@ def build():
         print("❌ Build failed")
         return
     
-    # إيجاد الملف
     exe_path = SCRIPT_DIR / "dist" / f"{APP_NAME}.exe"
     if not exe_path.exists():
         exe_path = SCRIPT_DIR / "dist" / APP_NAME
@@ -41,19 +38,14 @@ def build():
         print(f"\n✓ Build successful!")
         print(f"  📍 Path: {exe_path}")
         print(f"  📦 Size: {size:.1f} MB")
-        
-        # نسخ لمجلد التطبيق
         app_dir = SCRIPT_DIR / "التطبيق"
         app_dir.mkdir(exist_ok=True)
         shutil.copy2(exe_path, app_dir / exe_path.name)
         print(f"  📁 Copied to: {app_dir}")
-        
-        # تنظيف
         try:
             shutil.rmtree(SCRIPT_DIR / "build")
             os.remove(SCRIPT_DIR / f"{APP_NAME}.spec")
-        except:
-            pass
+        except: pass
     else:
         print("❌ Build failed - exe not found")
 

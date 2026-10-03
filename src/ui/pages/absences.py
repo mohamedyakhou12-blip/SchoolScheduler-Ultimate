@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QPushButton,
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QPushButton,
     QTableWidget, QTableWidgetItem, QHeaderView, QDialog, QFormLayout, QLineEdit, QComboBox,
     QSpinBox, QMessageBox, QScrollArea, QColorDialog, QTextEdit, QCheckBox, QListWidget,
     QListWidgetItem, QFileDialog, QMenu)
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QColor, QAction
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QColor
 from src.core.i18n import tr
 from src.core.models import *
 from src.ui.widgets.page_header import PageHeader
@@ -15,7 +15,7 @@ class AbsencesPage(QWidget):
     def _build_ui(self):
         layout = QVBoxLayout(self); layout.setContentsMargins(0,0,0,0)
         layout.addWidget(PageHeader(tr("nav_absences"), tr("nav_absences")))
-        scroll = QScrollArea(); scroll.setWidgetResizable(True); scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll = QScrollArea(); scroll.setWidgetResizable(True); scroll.setFrameShape(QFrame.NoFrame)
         content = QWidget(); cl = QVBoxLayout(content); cl.setContentsMargins(24,16,24,24)
         card = QFrame(); card.setObjectName("card"); cl2 = QVBoxLayout(card); cl2.setContentsMargins(20,16,20,16)
         title = QLabel(tr("nav_absences")); title.setObjectName("cardTitle"); cl2.addWidget(title)
@@ -26,9 +26,9 @@ class AbsencesPage(QWidget):
         cl2.addLayout(btns)
         self.table = QTableWidget(); self.table.setColumnCount(3)
         self.table.setHorizontalHeaderLabels(["ID","الاسم","ملاحظات"])
-        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-        self.table.setColumnWidth(0,60); self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
-        self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers); cl2.addWidget(self.table)
+        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+        self.table.setColumnWidth(0,60); self.table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.table.setEditTriggers(QTableWidget.NoEditTriggers); cl2.addWidget(self.table)
         cl.addWidget(card); cl.addStretch(); scroll.setWidget(content); layout.addWidget(scroll,1); self._load()
     def _load(self):
         items = []
